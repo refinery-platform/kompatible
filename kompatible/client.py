@@ -1,6 +1,7 @@
 import time
 
 from kubernetes import client, config
+from kubernetes.stream import stream
 
 
 config.load_kube_config()
@@ -36,14 +37,21 @@ class _Containers():
             }
         }
 
-        resp = api.create_namespaced_pod(body=pod_manifest,
-                                         namespace='default')
+        api.create_namespaced_pod(body=pod_manifest, namespace='default')
 
         while True:
-            resp = api.read_namespaced_pod(name=name,
-                                           namespace='default')
+            resp = api.read_namespaced_pod(name=name, namespace='default')
             if resp.status.phase != 'Pending':
                 break
-
             time.sleep(1)
         pass
+
+        exec_command = [
+            '/bin/sh',
+            '-c',
+            'echo This message goes to stderr >&2; echo This message goes to stdout']
+        resp = stream(api.connect_get_namespaced_pod_exec, name, 'default',
+                      command=exec_command,
+                      stderr=True, stdin=False,
+                      stdout=True, tty=False)
+        return resp

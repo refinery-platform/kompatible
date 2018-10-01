@@ -10,12 +10,12 @@ die() { set +v; echo "$*" 1>&2 ; sleep 1; exit 1; }
 start preflight
 docker info | grep 'Operating System' \
     || die 'Make sure Docker is running'
-kubectl cluster-info \
-    || die 'Make sure Minikube is running'  # TODO: What's a better check?
+kubectl cluster-info | grep 'KubeDNS' \
+    || die 'Make sure Minikube is running'
 [ -z "`docker ps -qa`" ] \
     || die 'Kill containers before running tests: "docker ps -qa | xargs docker stop | xargs docker rm"'
 [ -z "`kubectl get pods`" ] \
-    || die 'Kill pods before running tests: "kubectl delete pods --all"'  # TODO: Seems to hang?
+    || die 'Kill pods before running tests: "kubectl delete pods --all"'  # Can take a while...
 end preflight
 
 start doctest
