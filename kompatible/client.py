@@ -1,3 +1,5 @@
+import time
+
 from kubernetes import client, config
 
 
@@ -13,7 +15,7 @@ class Client():
 class _Containers():
     def run(self, image, command):
         api = client.CoreV1Api()
-        name = 'TODO_FOOBAR'
+        name = 'todo-foobar'
 
         pod_manifest = {
             'apiVersion': 'v1',

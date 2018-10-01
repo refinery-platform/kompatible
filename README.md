@@ -7,8 +7,13 @@ with an interface which matches that of the
 
 ## Examples
 
-Assuming you have installed both Minikube and Docker, and the corresponding
-Python clients, then the following lines will produce the same output,
+First, checkout this project, and install dependencies:
+`pip install -r requirements-dev.txt`.
+Then, make sure you have installed and started
+[Docker](https://docs.docker.com/docker-for-mac/install/)
+and [Minikube](https://kubernetes.io/docs/tutorials/hello-minikube/#create-a-minikube-cluster)
+
+With those tools in place, the following lines will produce the same output,
 regardless of the underlying technology. Either `import docker as sdk`
 or `import kompatible as sdk` and then
 
