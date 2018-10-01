@@ -1,0 +1,25 @@
+language: python
+python:
+- 2.7
+- 3.6
+env:
+  matrix:
+  - KUBERNETES_SDK_VERSION='7.0.0'
+matrix:
+  fast_finish: true
+install:
+- pip install -r requirements-dev.txt
+- pip install -r requirements.txt
+before_script:
+- pip install kubernetes==$KUBERNETES_SDK_VERSION
+script: "./test.sh"
+deploy:
+  provider: pypi
+  distributions: sdist bdist_wheel
+  user: mccalluc
+  password:
+    secure: iczHLDyUFOgdJepUajb3GeXyQIlrzMqtOPd+sVnflFbJQaOTOC3rNQOxO6cP1+TIimCkrCEcyH5DdAFBEQWTZcwC0wC0Wj3z1org8f4ZsljoeTtzPaDR2z0vg6DBeKcVBndVdRPGh0rXGNUckfh/wKiy/G/qeqKTqL2CaDcZYBmvecjnA35E3IklSvTAgK0WhI6zMBgrNObI4i3iTZ3sAGo7HhLe7Ew13VT1zSY6k12r9dz1RqoRBAgcsbzYFihfCMbUQkq0DSy62pMoLznEp3nZnSsVjr1DkmEMMh8PIKSKae+zJmgfMU+m5y9rfO7nszWfeQE2t9A/IRrEUXM6EzRFFqQ3NApz6FhsjoLBkQJFPhQbKUnKi9xOp1CVtelNMpx1n0wQjR3CrsFSR0u5bwU/skuLovWq58dx+CNIdxmcj9zzABS0s58GI9MRbsRh0JM7vSzYyPiFiXEK2A372dLclvVlGGmXbL1GeG5C13yyL8BsNUfq2LAlCZ2PNmLJhn8h7TeSYzVC5JcA/R2LdA/VR9AdTwZVXuMSSrwYCM/RE5FWQN0O9c9J8IZ/YCOyYe94SBvOTe/8dvzatd9MzMNy1XxNu9ZMF4w7phoeqAlov6wfWCbEu3+nFV1l/N2iOJg8B5e7m/xjLcIHQIqBgztdzYv9fFdZsROrp2XxdO0=
+  on:
+    branch: master
+    python: 3.6
+    condition: "$KUBERNETES_SDK_VERSION = '7.0.0'"
