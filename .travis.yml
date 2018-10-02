@@ -4,8 +4,7 @@ python:
 - 3.6
 sudo: required  # for minikube
 env:
-- KUBERNETES_SDK_VERSION='7.0.0'  # TODO: matrix
-- CHANGE_MINIKUBE_NONE_USER=true
+- KUBERNETES_SDK_VERSION='7.0.0'  # TODO: matrix to test range
 matrix:
   fast_finish: true
 before_install:
@@ -13,6 +12,9 @@ before_install:
 # https://blog.travis-ci.com/2017-10-26-running-kubernetes-on-travis-ci-with-minikube
 # Later updated by:
 # https://github.com/LiliC/travis-minikube/blob/master/.travis.yml
+
+# This moves Kubernetes specific config files.
+- CHANGE_MINIKUBE_NONE_USER=true
 
 # Download kubectl, which is a requirement for using minikube.
 - curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
@@ -30,10 +32,10 @@ before_install:
 - JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl -n kube-system get pods -lcomponent=kube-addon-manager -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1;echo "waiting for kube-addon-manager to be available"; kubectl get pods --all-namespaces; done
 # Wait for kube-dns to be ready.
 - JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl -n kube-system get pods -lk8s-app=kube-dns -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1;echo "waiting for kube-dns to be available"; kubectl get pods --all-namespaces; done
-# Create example Redis deployment on Kubernetes.
-- kubectl run travis-example --image=redis --labels="app=travis-example"
-# Make sure created pod is scheduled and running.
-- JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl -n default get pods -lapp=travis-example -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1;echo "waiting for travis-example deployment to be available"; kubectl get pods -n default; done
+## Create example Redis deployment on Kubernetes.
+#- kubectl run travis-example --image=redis --labels="app=travis-example"
+## Make sure created pod is scheduled and running.
+#- JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl -n default get pods -lapp=travis-example -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1;echo "waiting for travis-example deployment to be available"; kubectl get pods -n default; done
 install:
 - pip install -r requirements-dev.txt
 - pip install -r requirements.txt
