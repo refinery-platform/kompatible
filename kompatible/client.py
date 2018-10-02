@@ -28,7 +28,7 @@ class _Containers():
                 'containers': [{
                     'image': image,
                     'name': name,
-                    "args": [
+                    "args": [  # TODO: Is this necessary?
                         "/bin/sh",
                         "-c",
                         "while true;do date;sleep 5; done"
@@ -46,12 +46,10 @@ class _Containers():
             time.sleep(1)
         pass
 
-        exec_command = [
-            '/bin/sh',
-            '-c',
-            'echo This message goes to stderr >&2; echo This message goes to stdout']
+        exec_command = ['/bin/sh', '-c', command]
         resp = stream(api.connect_get_namespaced_pod_exec, name, 'default',
                       command=exec_command,
                       stderr=True, stdin=False,
                       stdout=True, tty=False)
-        return resp
+        # Return bytes just to match behavior of Docker client.
+        return resp.encode()
