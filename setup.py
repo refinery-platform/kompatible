@@ -1,6 +1,4 @@
 import os
-import re
-import sys
 from os.path import abspath, dirname, join, normpath
 
 # isort has different behavior for different versions of python here.
