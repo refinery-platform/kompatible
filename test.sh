@@ -16,8 +16,12 @@ docker info | grep 'Operating System' \
 kubectl cluster-info
 # TODO: What is a good check for kubernetes?
 
+# Running locally, Kubernetes housekeeping containers are inside the VM.
+# On Travis, there is no VM, so Docker will see Kubernetes containers.
+# For now, "grep -v kube" seems to exclude them all,
+# and "tail" excludes the header.
 docker ps -a
-[ -z "`docker ps -qa`" ] \
+[ -z "`docker ps -a | grep -v kube | tail -n +2`" ] \
     || die 'Kill containers before running tests: "docker ps -qa | xargs docker stop | xargs docker rm"'
 
 kubectl get pods
