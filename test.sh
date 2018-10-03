@@ -8,15 +8,22 @@ die() { set +v; echo "$*" 1>&2 ; sleep 1; exit 1; }
 # https://github.com/travis-ci/travis-ci/issues/6018
 
 start preflight
+
+docker info
 docker info | grep 'Operating System' \
     || die 'Make sure Docker is running'
+
 kubectl cluster-info
-#kubectl cluster-info | grep 'Kubernetes master is running' \
-#    || die 'Make sure Minikube is running'
+# TODO: What is a good check for kubernetes?
+
+docker ps -a
 [ -z "`docker ps -qa`" ] \
     || die 'Kill containers before running tests: "docker ps -qa | xargs docker stop | xargs docker rm"'
+
+kubectl get pods
 [ -z "`kubectl get pods`" ] \
     || die 'Kill pods before running tests: "kubectl delete pods --all"'  # Can take a while...
+
 end preflight
 
 start doctest
