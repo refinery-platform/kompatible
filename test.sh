@@ -10,7 +10,7 @@ die() { set +v; echo "$*" 1>&2 ; sleep 1; exit 1; }
 start preflight
 docker info | grep 'Operating System' \
     || die 'Make sure Docker is running'
-kubectl cluster-info | grep 'KubeDNS' \
+kubectl cluster-info | grep 'Kubernetes master is running' \
     || die 'Make sure Minikube is running'
 [ -z "`docker ps -qa`" ] \
     || die 'Kill containers before running tests: "docker ps -qa | xargs docker stop | xargs docker rm"'
