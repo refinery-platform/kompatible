@@ -1,0 +1,7 @@
+.idea/
+
+*.pyc
+
+build/
+dist/
+kompatible.egg-info/

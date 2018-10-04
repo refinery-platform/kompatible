@@ -1,0 +1,10 @@
+kubernetes==7.0.0
+docker==3.5.0
+
+# Code style:
+flake8==3.5.0
+autopep8==1.4
+isort==4.3.4
+
+# Read .travis.yml so that our pypi version metadata matches our tests
+PyYAML==3.13
