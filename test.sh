@@ -31,7 +31,8 @@ kubectl get pods
 end preflight
 
 start doctest
-python doctest_runner.py --docker
+# TODO: Need to split up the matrix: docker see the Kubernetes housekeeping.
+#python doctest_runner.py --docker
 python doctest_runner.py --kompatible
 end doctest
 
