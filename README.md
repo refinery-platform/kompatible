@@ -32,6 +32,7 @@ or `import kompatible as sdk` and then
 [...'hello world\n']
 
 >>> containers = client.containers.list(all=True, filters={})
+>>> containers = [c for c in containers if 'kube' not in c.name]  # Filter for Docker
 >>> [c.name for c in containers]
 [...'foobar']
 >>> c = containers[0]
