@@ -1,5 +1,5 @@
-import time
 import logging
+import time
 
 from kubernetes import client
 from kubernetes.stream import stream

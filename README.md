@@ -31,8 +31,10 @@ or `import kompatible as sdk` and then
 ...     labels={'foo': 'bar'})]
 [...'hello world\n']
 
->>> containers = client.containers.list(all=True, filters={})
->>> containers = [c for c in containers if 'kube' not in c.name]  # Filter for Docker
+>>> def not_kube(containers):  # Only needed for Docker, on Travis, with Kube started.
+...     return [c for c in containers if 'kube' not in c.name]
+
+>>> containers = not_kube(client.containers.list(all=True, filters={}))
 >>> [c.name for c in containers]
 [...'foobar']
 >>> c = containers[0]
