@@ -12,7 +12,8 @@ if args.docker:
 else:
     import kompatible as sdk
 
-(failure_count, test_count) = doctest.testfile('README.md', globs={'sdk': sdk})
+(failure_count, test_count) = doctest.testfile(
+    'README.md', globs={'sdk': sdk}, optionflags=doctest.ELLIPSIS)
 print('{}: fail / total = {} / {}'.format(
     sdk.__name__, failure_count, test_count))
 if failure_count > 0:

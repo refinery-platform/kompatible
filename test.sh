@@ -31,8 +31,7 @@ kubectl get pods
 end preflight
 
 start doctest
-python doctest_runner.py --docker
-python doctest_runner.py --kompatible
+python doctest_runner.py --$TARGET
 end doctest
 
 #start coverage
