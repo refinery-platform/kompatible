@@ -1,9 +1,13 @@
 import time
+import logging
 
 from kubernetes import client
 from kubernetes.stream import stream
 
 NAMESPACE = 'default'
+
+logging.basicConfig()
+logger = logging.getLogger(__name__)
 
 
 class ContainersClient():
@@ -56,6 +60,8 @@ class ContainersClient():
 
     def list(self, all=False, filters=None):
         all_pods = self.api.list_pod_for_all_namespaces(watch=False).items
+        logger.warn('all_pods: {}'.format(
+            [(pod.metadata.name, pod.metadata.namespace) for pod in all_pods]))
         our_pods = [pod for pod in all_pods
                     if pod.metadata.namespace == NAMESPACE]
         return [_ContainerWrapper(self.api, pod) for pod in our_pods]
