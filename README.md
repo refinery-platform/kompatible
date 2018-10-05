@@ -46,7 +46,7 @@ or `import kompatible as sdk` and then
 >>> assert c.status
 
 >>> c.remove(force=True, v=True)
->>> containers = client.containers.list(all=True, filters={})
+>>> containers = not_kube(client.containers.list(all=True, filters={}))
 >>> assert len(containers) == 0
 
 ```
