@@ -1,4 +1,5 @@
 import logging
+from sys import version_info
 import time
 
 from kubernetes import client
@@ -13,9 +14,35 @@ logger = logging.getLogger(__name__)
 class ContainersClient():
 
     def __init__(self):
-        config = client.Configuration()
-        config.verify_ssl = False
-        client.Configuration.set_default(config)
+        if version_info.major_version == 2:
+            # On Python2 (not Python3) was hitting:
+            #      File ".../stream/stream.py", line 32, in stream
+            #        return func(*args, **kwargs)
+            #      File ".../client/apis/core_v1_api.py", line 835,
+            #        in connect_get_namespaced_pod_exec
+            #        (data) = self.connect_get_namespaced_pod_exec
+            #        _with_http_info(name, namespace, **kwargs)
+            #      File ".../client/apis/core_v1_api.py", line 935,
+            #        in connect_get_namespaced_pod_exec_with_http_info
+            #        collection_formats=collection_formats)
+            #      File ".../client/api_client.py", line 321, in call_api
+            #        _return_http_data_only, collection_formats,
+            #        _preload_content, _request_timeout)
+            #      File ".../client/api_client.py", line 155, in __call_api
+            #        _request_timeout=_request_timeout)
+            #      File ".../stream/stream.py", line 27,
+            #        in _intercept_request_call
+            #        return ws_client.websocket_call(config, *args, **kwargs)
+            #      File ".../stream/ws_client.py", line 255, in websocket_call
+            #        raise ApiException(status=0, reason=str(e))
+            #    ApiException: (0)
+            #    Reason: hostname '192.168.99.100' doesn't match either of
+            #      'minikubeCA', 'kubernetes.default.svc.cluster.local',
+            #      'kubernetes.default.svc', 'kubernetes.default',
+            #      'kubernetes', 'localhost'
+            config = client.Configuration()
+            config.verify_ssl = False
+            client.Configuration.set_default(config)
         self.api = client.CoreV1Api()
 
     def run(self, image, command=None,
