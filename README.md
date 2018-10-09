@@ -39,16 +39,22 @@ and in the latter it's Kubernetes pods.
 >>> [c.name for c in containers]
 [...'foobar']
 >>> c = containers[0]
+
+>>> c.remove(force=True, v=True)
+>>> containers = not_kube(client.containers.list(all=True, filters={}))
+>>> assert len(containers) == 0
+
+```
+
+## Container properties
+
+```python
 >>> assert c.id
 >>> assert c.image
 >>> c.labels
 {...'foo': ...'bar'}
 >>> assert c.short_id
 >>> assert c.status
-
->>> c.remove(force=True, v=True)
->>> containers = not_kube(client.containers.list(all=True, filters={}))
->>> assert len(containers) == 0
 
 ```
 
