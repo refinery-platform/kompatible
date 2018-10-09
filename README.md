@@ -15,18 +15,16 @@ Then, make sure you have installed and started
 [Docker](https://docs.docker.com/docker-for-mac/install/)
 and/or [Minikube](https://kubernetes.io/docs/tutorials/hello-minikube/#create-a-minikube-cluster)
 
-With those tools in place, the following lines will produce the same output,
-but in one case it's Docker containers starting up,
-and in the other it is Kubernetes pods.
-Either `import docker as sdk` or `import kompatible as sdk` and then
+With those tools in place, either
+`import docker as sdk` or `import kompatible as sdk`
+and the following examples will work, although in the first case
+it's Docker containers starting up,
+and in the latter it's Kubernetes pods.
+
+## "Hello World!": Run, list, remove
 
 ```python
 >>> client = sdk.from_env()
-
->>> assert client.api
->>> assert client.containers
->>> assert client.images
->>> assert client.volumes
 
 >>> [client.containers.run(
 ...     "alpine", "echo hello world",
@@ -54,34 +52,50 @@ Either `import docker as sdk` or `import kompatible as sdk` and then
 
 ```
 
+## `containers.run` kwargs
+
+```python
 
 ```
-TODO:
-    client.api.base_url
-    
-    client.containers.run(image_name,
-        name=container_spec.container_name,
-        ports={'{}/tcp'.format(container_spec.container_port): None},
-        detach=True,
-        labels=labels,
-        volumes=volumes,
-        nano_cpus=int(container_spec.cpus * 1e9),
-        environment=environment,
-        mem_reservation='{}M'.format(new_mem_reservation_mb))
-    client.containers.get(name_or_id)
-        container.logs(timestamps=True)
-        container.attrs['NetworkSettings']
-        container.attrs['Config']['Labels']
-        container.remove(force=True, v=True)
-    client.containers.list(all=True, filters=filters)
-    
-    client.images
-    client.images.pull  # Used by script, but not used by runtime.
-    # For Kubernetes, consider https://kubernetes.io/docs/concepts/containers/images/#pre-pulling-images
-    # We would need to make sure that every image is on every node we start up.
-    # Mayber other Container registries are faster than DockerHub, in which
-    # case pre-caching might be less important?
-    
-    client.volumes
-    client.volumes.create(driver='local').name
+
+## Subclients
+
+```python
+>>> assert client.api
+>>> assert client.containers
+>>> assert client.images
+>>> assert client.volumes
+
+```
+
+## TODO
+
+```
+client.api.base_url
+
+client.containers.run(image_name,
+    name=container_spec.container_name,
+    ports={'{}/tcp'.format(container_spec.container_port): None},
+    detach=True,
+    labels=labels,
+    volumes=volumes,
+    nano_cpus=int(container_spec.cpus * 1e9),
+    environment=environment,
+    mem_reservation='{}M'.format(new_mem_reservation_mb))
+client.containers.get(name_or_id)
+    container.logs(timestamps=True)
+    container.attrs['NetworkSettings']
+    container.attrs['Config']['Labels']
+    container.remove(force=True, v=True)
+client.containers.list(all=True, filters=filters)
+
+client.images
+client.images.pull  # Used by script, but not used by runtime.
+# For Kubernetes, consider https://kubernetes.io/docs/concepts/containers/images/#pre-pulling-images
+# We would need to make sure that every image is on every node we start up.
+# Mayber other Container registries are faster than DockerHub, in which
+# case pre-caching might be less important?
+
+client.volumes
+client.volumes.create(driver='local').name
 ```
