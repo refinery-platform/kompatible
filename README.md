@@ -1,5 +1,7 @@
 # kompatible
 
+[![PyPI version](https://badge.fury.io/py/kompatible.svg)](https://badge.fury.io/py/kompatible)
+
 This package exposes a subset of the
 [Kubernetes Python Client](https://github.com/kubernetes-client/python/)
 with an interface which matches that of the
@@ -11,11 +13,12 @@ First, checkout this project, and install dependencies:
 `pip install -r requirements-dev.txt`.
 Then, make sure you have installed and started
 [Docker](https://docs.docker.com/docker-for-mac/install/)
-and [Minikube](https://kubernetes.io/docs/tutorials/hello-minikube/#create-a-minikube-cluster)
+and/or [Minikube](https://kubernetes.io/docs/tutorials/hello-minikube/#create-a-minikube-cluster)
 
 With those tools in place, the following lines will produce the same output,
-regardless of the underlying technology. Either `import docker as sdk`
-or `import kompatible as sdk` and then
+but in one case it's Docker containers starting up,
+and in the other it is Kubernetes pods.
+Either `import docker as sdk` or `import kompatible as sdk` and then
 
 ```python
 >>> client = sdk.from_env()
@@ -31,7 +34,7 @@ or `import kompatible as sdk` and then
 ...     labels={'foo': 'bar'})]
 [...'hello world\n']
 
->>> def not_kube(containers):  # Only needed for Docker, on Travis, with Kube started.
+>>> def not_kube(containers):  # Only needed for Docker, on Travis, with k8s started.
 ...     return [c for c in containers if 'kube' not in c.name]
 
 >>> containers = not_kube(client.containers.list(all=True, filters={}))
