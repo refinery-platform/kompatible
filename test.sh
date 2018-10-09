@@ -13,8 +13,12 @@ docker info
 docker info | grep 'Operating System' \
     || die 'Make sure Docker is running'
 
-kubectl cluster-info
-# TODO: What is a good check for kubernetes?
+if which kubectl; then
+    kubectl cluster-info
+    kubectl get pods
+    [ -z "`kubectl get pods`" ] \
+        || die 'Kill pods before running tests: "kubectl delete pods --all"'  # Can take a while...
+fi
 
 # Running locally, Kubernetes housekeeping containers are inside the VM.
 # On Travis, there is no VM, so Docker will see Kubernetes containers.
@@ -23,10 +27,6 @@ kubectl cluster-info
 docker ps -a
 [ -z "`docker ps -a | grep -v kube | tail -n +2`" ] \
     || die 'Kill containers before running tests: "docker ps -qa | xargs docker stop | xargs docker rm"'
-
-kubectl get pods
-[ -z "`kubectl get pods`" ] \
-    || die 'Kill pods before running tests: "kubectl delete pods --all"'  # Can take a while...
 
 end preflight
 
