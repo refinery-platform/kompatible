@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class ContainersClient():
 
     def __init__(self):
-        if version_info.major_version == 2:
+        if version_info[0] == 2:
             # On Python2 (not Python3) was hitting:
             #      File ".../stream/stream.py", line 32, in stream
             #        return func(*args, **kwargs)
