@@ -1,6 +1,6 @@
 import logging
-from sys import version_info
 import time
+from sys import version_info
 
 from kubernetes import client
 from kubernetes.stream import stream
