@@ -8,7 +8,6 @@ sudo: required
 env:
   global:
   - KUBERNETES_VERSION=v1.9.0  # TODO: Test other versions
-  - KUBERNETES_SDK_VERSION='7.0.0'
   matrix:
   - TARGET=docker
   - TARGET=kompatible KUBERNETES_SDK_VERSION='7.0.0'
