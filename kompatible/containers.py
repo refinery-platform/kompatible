@@ -13,6 +13,9 @@ logger = logging.getLogger(__name__)
 class ContainersClient():
 
     def __init__(self):
+        config = client.Configuration()
+        config.verify_ssl = False
+        client.Configuration.set_default(config)
         self.api = client.CoreV1Api()
 
     def run(self, image, command=None,
