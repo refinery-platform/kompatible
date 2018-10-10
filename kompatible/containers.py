@@ -11,6 +11,10 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
+class ContainersException(Exception):
+    pass
+
+
 class ContainersClient():
 
     def __init__(self):
@@ -46,7 +50,23 @@ class ContainersClient():
         self.api = client.CoreV1Api()
 
     def run(self, image, command=None,
-            name='anonymous', labels={}, environment={}):
+            name='anonymous', labels={}, environment={}, ports={}):
+        ports_spec = []
+        for k, v in ports.items():
+            if v is not None:
+                raise ContainersException(
+                    'Unexpected non-None in port dict values: {}'.format(
+                        ports))
+            port_components = k.split('/')
+            if len(port_components) != 2:
+                raise ContainersException(
+                    'Expected the form port/protocol, not "{}"'.format(k))
+            [port_number, protocol] = port_components
+            ports_spec.append({
+                'containerPort': int(port_number),
+                'protocol': protocol.upper()
+            })
+
         pod_manifest = {
             'apiVersion': 'v1',
             'kind': 'Pod',
@@ -59,11 +79,14 @@ class ContainersClient():
                     'image': image,
                     'name': name,
                     'labels': labels,
-                    "args": [  # TODO: Is this necessary?
+                    "args": [
+                        # There is no analog to Docker detach:
+                        # The pod exits when the last process exits.
                         "/bin/sh",
                         "-c",
-                        "while true;do date;sleep 5; done"
+                        "while true; do sleep 1; done"
                     ],
+                    'ports': ports_spec,
                     'env': [{'name': n,
                              'value': v} for (n, v) in environment.items()]
                 }]
@@ -102,7 +125,7 @@ class _ContainerWrapper():
         meta = pod.metadata
         containers = pod.spec.containers
         if len(containers) > 1:
-            raise Exception(
+            raise ContainersException(
                 'Expected single container; not {}'.format(containers))
 
         self.id = meta.uid
@@ -114,7 +137,8 @@ class _ContainerWrapper():
 
     def remove(self, force=None, v=None):
         if not force or not v:
-            raise Exception('Unsupported: "force" and "v" must both be True')
+            raise ContainersException(
+                'Unsupported: "force" and "v" must both be True')
         self._api.delete_namespaced_pod(
             self.name, NAMESPACE,
             client.V1DeleteOptions(grace_period_seconds=0))
