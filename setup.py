@@ -22,7 +22,7 @@ setup(
     name='kompatible',
     version=version,
     install_requires=[
-        'kubernetes',  # TODO: determine lower bound
+        'kubernetes>=4.0.0',
     ],
     packages=find_packages(exclude=['tests']),
     include_package_data=True,
