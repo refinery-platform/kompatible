@@ -23,7 +23,7 @@ and in the latter it's Kubernetes pods.
 
 ## "Hello World!": Run, list, remove
 
-```python
+```
 >>> client = sdk.from_env()
 
 >>> [client.containers.run(
@@ -48,7 +48,7 @@ and in the latter it's Kubernetes pods.
 
 ## Container properties
 
-```python
+```
 >>> assert c.id
 >>> assert c.image
 >>> c.labels
@@ -60,13 +60,23 @@ and in the latter it's Kubernetes pods.
 
 ## `containers.run` kwargs
 
-```python
+```
+>>> [client.containers.run(
+...     "nginx:1.15.5-alpine",
+...     name='nginx',
+...     labels={'foo': 'bar'},
+...     ports={'80/tcp': None},
+... )]
+[...'']
+>>> containers = not_kube(client.containers.list(all=True, filters={}))
+>>> c = containers[0]
+>>> c.remove(force=True, v=True)
 
 ```
 
 ## Subclients
 
-```python
+```
 >>> assert client.api
 >>> assert client.containers
 >>> assert client.images

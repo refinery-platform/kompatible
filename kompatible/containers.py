@@ -102,12 +102,13 @@ class ContainersClient():
             time.sleep(1)
         pass
 
-        exec_command = ['/bin/sh', '-c', command]
+        stream_kwargs = {
+            'stderr': True, 'stdin': False, 'stdout': True, 'tty': False
+        }
+        if command is not None:
+            stream_kwargs['command'] = ['/bin/sh', '-c', command]
         resp = stream(self.api.connect_get_namespaced_pod_exec,
-                      name, 'default',
-                      command=exec_command,
-                      stderr=True, stdin=False,
-                      stdout=True, tty=False)
+                      name, 'default', **stream_kwargs)
         # Return bytes just to match behavior of Docker client.
         return resp.encode()
 
