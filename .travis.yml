@@ -19,7 +19,7 @@ before_install:
 
 install:
 - pip install -r requirements-dev.txt
-- pip install kubernetes==$KUBERNETES_SDK_VERSION
+- '[ -z "$KUBERNETES_SDK_VERSION" ] || pip install kubernetes==$KUBERNETES_SDK_VERSION'
 
 script: "./test.sh"
 
