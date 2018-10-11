@@ -49,8 +49,8 @@ class ContainersClient():
             client.Configuration.set_default(config)
         self.api = client.CoreV1Api()
 
-    def run(self, image, command=None,
-            name='anonymous', labels={}, environment={}, ports={}):
+    def run(self, image, command=None, name='anonymous',
+            labels={}, environment={}, ports={}, detach=False):
         ports_spec = []
         for k, v in ports.items():
             if v is not None:
@@ -93,7 +93,8 @@ class ContainersClient():
             }
         }
 
-        self.api.create_namespaced_pod(body=pod_manifest, namespace=NAMESPACE)
+        pod = self.api.create_namespaced_pod(
+            body=pod_manifest, namespace=NAMESPACE)
 
         while True:
             resp = self.api.read_namespaced_pod(name=name, namespace=NAMESPACE)
@@ -102,15 +103,21 @@ class ContainersClient():
             time.sleep(1)
         pass
 
-        stream_kwargs = {
+        if detach:
+            if command is not None:
+                raise ContainersException(
+                    'command and detach kwargs are incompatible')
+            return _ContainerWrapper(self.api, pod)
+
+        kwargs = {
             'stderr': True, 'stdin': False, 'stdout': True, 'tty': False
         }
         if command is not None:
-            stream_kwargs['command'] = ['/bin/sh', '-c', command]
-        resp = stream(self.api.connect_get_namespaced_pod_exec,
-                      name, 'default', **stream_kwargs)
+            kwargs['command'] = ['/bin/sh', '-c', command]
+        stream_response = stream(self.api.connect_get_namespaced_pod_exec,
+                                 name, 'default', **kwargs)
         # Return bytes just to match behavior of Docker client.
-        return resp.encode()
+        return stream_response.encode()
 
     def list(self, all=False, filters=None):
         all_pods = self.api.list_pod_for_all_namespaces(watch=False).items

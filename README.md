@@ -61,16 +61,14 @@ and in the latter it's Kubernetes pods.
 ## `containers.run` kwargs
 
 ```
->>> [client.containers.run(
+>>> container = client.containers.run(
 ...     "nginx:1.15.5-alpine",
 ...     name='nginx',
 ...     labels={'foo': 'bar'},
 ...     ports={'80/tcp': None},
-... )]
-[...'']
->>> containers = not_kube(client.containers.list(all=True, filters={}))
->>> c = containers[0]
->>> c.remove(force=True, v=True)
+...     detach=True
+... )
+>>> container.remove(force=True, v=True)
 
 ```
 
