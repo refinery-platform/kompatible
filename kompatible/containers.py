@@ -11,6 +11,10 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
+class ContainersException(Exception):
+    pass
+
+
 class ContainersClient():
 
     def __init__(self):
@@ -45,9 +49,27 @@ class ContainersClient():
             client.Configuration.set_default(config)
         self.api = client.CoreV1Api()
 
-    def run(self, image, command=None,
-            name='anonymous', labels={}, environment={}):
-        pod_manifest = {
+    def _ports_spec(self, ports):
+        ports_spec = []
+        for k, v in ports.items():
+            if v is not None:
+                raise ContainersException(
+                    'Unexpected non-None in port dict values: {}'.format(
+                        ports))
+            port_components = k.split('/')
+            if len(port_components) != 2:
+                raise ContainersException(
+                    'Expected the form port/protocol, not "{}"'.format(k))
+            [port_number, protocol] = port_components
+            ports_spec.append({
+                'containerPort': int(port_number),
+                'protocol': protocol.upper()
+            })
+        return ports_spec
+
+    def _manifest(self, name=None, labels=None, image=None,
+                  ports_spec=None, environment=None):
+        return {
             'apiVersion': 'v1',
             'kind': 'Pod',
             'metadata': {
@@ -59,18 +81,29 @@ class ContainersClient():
                     'image': image,
                     'name': name,
                     'labels': labels,
-                    "args": [  # TODO: Is this necessary?
+                    "args": [
+                        # There is no analog to Docker detach:
+                        # The pod exits when the last process exits.
                         "/bin/sh",
                         "-c",
-                        "while true;do date;sleep 5; done"
+                        "while true; do sleep 1; done"
                     ],
+                    'ports': ports_spec,
                     'env': [{'name': n,
                              'value': v} for (n, v) in environment.items()]
                 }]
             }
         }
 
-        self.api.create_namespaced_pod(body=pod_manifest, namespace=NAMESPACE)
+    def run(self, image, command=None, name='anonymous',
+            labels={}, environment={}, ports={}, detach=False):
+        ports_spec = self._ports_spec(ports)
+        pod_manifest = self._manifest(
+            name=name, labels=labels, image=image,
+            ports_spec=ports_spec, environment=environment)
+
+        pod = self.api.create_namespaced_pod(
+            body=pod_manifest, namespace=NAMESPACE)
 
         while True:
             resp = self.api.read_namespaced_pod(name=name, namespace=NAMESPACE)
@@ -79,14 +112,26 @@ class ContainersClient():
             time.sleep(1)
         pass
 
-        exec_command = ['/bin/sh', '-c', command]
-        resp = stream(self.api.connect_get_namespaced_pod_exec,
-                      name, 'default',
-                      command=exec_command,
-                      stderr=True, stdin=False,
-                      stdout=True, tty=False)
+        if detach:
+            if command is not None:
+                raise ContainersException(
+                    '"command" and "detach" kwargs are incompatible')
+            return _ContainerWrapper(self.api, pod)
+
+        kwargs = {
+            'stderr': True, 'stdin': False, 'stdout': True, 'tty': False
+        }
+        if command is not None:
+            kwargs['command'] = ['/bin/sh', '-c', command]
+        stream_response = stream(self.api.connect_get_namespaced_pod_exec,
+                                 name, 'default', **kwargs)
         # Return bytes just to match behavior of Docker client.
-        return resp.encode()
+        return stream_response.encode()
+
+    def get(self, name):
+        # TODO: Handle lookup by ID.
+        return _ContainerWrapper(
+            self.api, self.api.read_namespaced_pod(name, 'default'))
 
     def list(self, all=False, filters=None):
         all_pods = self.api.list_pod_for_all_namespaces(watch=False).items
@@ -102,11 +147,29 @@ class _ContainerWrapper():
         meta = pod.metadata
         containers = pod.spec.containers
         if len(containers) > 1:
-            raise Exception(
+            raise ContainersException(
                 'Expected single container; not {}'.format(containers))
+        container = containers[0]
+
+        if container.ports is None:
+            ports = {}
+        else:
+            ports = {
+                '{}/{}'.format(
+                    p.container_port,
+                    p.protocol.lower()
+                ): [{
+                    'HostIp': p.host_ip,
+                    'HostPort': p.host_port
+                }]
+                for p in container.ports
+            }
 
         self.id = meta.uid
-        self.image = containers[0].image
+        self.attrs = {
+            'NetworkSettings': {'Ports': ports}
+        }
+        self.image = container.image
         self.labels = meta.labels
         self.name = meta.name
         self.short_id = self.id[:10]
@@ -114,7 +177,8 @@ class _ContainerWrapper():
 
     def remove(self, force=None, v=None):
         if not force or not v:
-            raise Exception('Unsupported: "force" and "v" must both be True')
+            raise ContainersException(
+                'Unsupported: "force" and "v" must both be True')
         self._api.delete_namespaced_pod(
             self.name, NAMESPACE,
             client.V1DeleteOptions(grace_period_seconds=0))
