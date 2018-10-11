@@ -61,7 +61,7 @@ and in the latter it's Kubernetes pods.
 ## `containers.run` kwargs
 
 ```
->>> container_run = client.containers.run(
+>>> container_from_run = client.containers.run(
 ...     "nginx:1.15.5-alpine",
 ...     name='nginx',
 ...     labels={'foo': 'bar'},
@@ -69,16 +69,17 @@ and in the latter it's Kubernetes pods.
 ...     detach=True
 ... )
 
-#>>> container_run.attrs['NetworkSettings']['Ports']
+#>>> container_from_run.attrs['NetworkSettings']['Ports']
 # not TODO?: docker: {}; kompatible: initialized
 
->>> container_get = client.containers.get('nginx')
->>> container_get.attrs['NetworkSettings']['Ports']['80/tcp']
-[{'HostIp': ..., 'HostPort': ...}]
+>>> container_from_get = client.containers.get('nginx')
+>>> port_info = container_from_get.attrs['NetworkSettings']['Ports']['80/tcp']
 
 # TODO: docker: random port; kompatible: None
+>>> assert 'HostIp' in port_info[0]
+>>> assert 'HostPort' in port_info[0]
 
->>> container_get.remove(force=True, v=True)
+>>> container_from_get.remove(force=True, v=True)
 
 ```
 
