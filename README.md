@@ -61,18 +61,23 @@ and in the latter it's Kubernetes pods.
 ## `containers.run` kwargs
 
 ```
->>> container = client.containers.run(
+>>> container_run = client.containers.run(
 ...     "nginx:1.15.5-alpine",
 ...     name='nginx',
 ...     labels={'foo': 'bar'},
 ...     ports={'80/tcp': None},
 ...     detach=True
 ... )
->>> container.remove(force=True, v=True)
+>>> container_run.attrs['NetworkSettings']['Ports']
+{}
+>>> container_get = client.containers.get('nginx')
+>>> container_get.attrs['NetworkSettings']['Ports']
+{'80/tcp': [{'HostIp': '0.0.0.0', 'HostPort': '...'}]}
+>>> container_get.remove(force=True, v=True)
 
 ```
 
-## Subclients
+## Subclient stubs
 
 ```
 >>> assert client.api
