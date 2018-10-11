@@ -68,11 +68,16 @@ and in the latter it's Kubernetes pods.
 ...     ports={'80/tcp': None},
 ...     detach=True
 ... )
->>> container_run.attrs['NetworkSettings']['Ports']
-{}
+
+#>>> container_run.attrs['NetworkSettings']['Ports']
+# not TODO?: docker: {}; kompatible: initialized
+
 >>> container_get = client.containers.get('nginx')
->>> container_get.attrs['NetworkSettings']['Ports']
-{'80/tcp': [{'HostIp': '0.0.0.0', 'HostPort': '...'}]}
+>>> container_get.attrs['NetworkSettings']['Ports']['80/tcp']
+[{'HostIp': ..., 'HostPort': ...}]
+
+# TODO: docker: random port; kompatible: None
+
 >>> container_get.remove(force=True, v=True)
 
 ```

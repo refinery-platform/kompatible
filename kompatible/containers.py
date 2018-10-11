@@ -49,8 +49,7 @@ class ContainersClient():
             client.Configuration.set_default(config)
         self.api = client.CoreV1Api()
 
-    def run(self, image, command=None, name='anonymous',
-            labels={}, environment={}, ports={}, detach=False):
+    def _ports_spec(self, ports):
         ports_spec = []
         for k, v in ports.items():
             if v is not None:
@@ -66,8 +65,11 @@ class ContainersClient():
                 'containerPort': int(port_number),
                 'protocol': protocol.upper()
             })
+        return ports_spec
 
-        pod_manifest = {
+    def _manifest(self, name=None, labels=None, image=None,
+                  ports_spec=None, environment=None):
+        return {
             'apiVersion': 'v1',
             'kind': 'Pod',
             'metadata': {
@@ -93,6 +95,13 @@ class ContainersClient():
             }
         }
 
+    def run(self, image, command=None, name='anonymous',
+            labels={}, environment={}, ports={}, detach=False):
+        ports_spec = self._ports_spec(ports)
+        pod_manifest = self._manifest(
+            name=name, labels=labels, image=image,
+            ports_spec=ports_spec, environment=environment)
+
         pod = self.api.create_namespaced_pod(
             body=pod_manifest, namespace=NAMESPACE)
 
@@ -106,7 +115,7 @@ class ContainersClient():
         if detach:
             if command is not None:
                 raise ContainersException(
-                    'command and detach kwargs are incompatible')
+                    '"command" and "detach" kwargs are incompatible')
             return _ContainerWrapper(self.api, pod)
 
         kwargs = {
@@ -118,6 +127,11 @@ class ContainersClient():
                                  name, 'default', **kwargs)
         # Return bytes just to match behavior of Docker client.
         return stream_response.encode()
+
+    def get(self, name):
+        # TODO: Handle lookup by ID.
+        return _ContainerWrapper(
+            self.api, self.api.read_namespaced_pod(name, 'default'))
 
     def list(self, all=False, filters=None):
         all_pods = self.api.list_pod_for_all_namespaces(watch=False).items
@@ -135,9 +149,27 @@ class _ContainerWrapper():
         if len(containers) > 1:
             raise ContainersException(
                 'Expected single container; not {}'.format(containers))
+        container = containers[0]
+
+        if container.ports is None:
+            ports = {}
+        else:
+            ports = {
+                '{}/{}'.format(
+                    p.container_port,
+                    p.protocol.lower()
+                ): [{
+                    'HostIp': p.host_ip,
+                    'HostPort': p.host_port
+                }]
+                for p in container.ports
+            }
 
         self.id = meta.uid
-        self.image = containers[0].image
+        self.attrs = {
+            'NetworkSettings': {'Ports': ports}
+        }
+        self.image = container.image
         self.labels = meta.labels
         self.name = meta.name
         self.short_id = self.id[:10]
