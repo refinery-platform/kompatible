@@ -1,9 +1,15 @@
 import argparse
 import doctest
+from re import sub
 
 
 class UnfussyOutputChecker(doctest.OutputChecker):
-    pass
+    def check_output(self, want, got, optionflags):
+        if optionflags:
+            raise Exception('options are not supported')
+        got = sub(r"\bu'", "'", got)  # python 2
+        got = sub(r"\bb'", "'", got)  # python 3
+        return want == got
 
 
 def get_sdk():
@@ -28,9 +34,7 @@ def main():
         string=readme, globs={'sdk': get_sdk()},
         name=filename, filename=None, lineno=0)
 
-    runner = doctest.DocTestRunner(
-        checker=UnfussyOutputChecker(),
-        optionflags=doctest.ELLIPSIS)
+    runner = doctest.DocTestRunner(checker=UnfussyOutputChecker())
     runner.run(examples)
     (failed, attempted) = runner.summarize()
     if failed > 0:

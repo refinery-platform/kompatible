@@ -30,14 +30,14 @@ and in the latter it's Kubernetes pods.
 ...     "alpine", "echo hello world",
 ...     name='foobar',
 ...     labels={'foo': 'bar'})]
-[...'hello world\n']
+['hello world\n']
 
 >>> def not_kube(containers):  # Only needed for Docker, on Travis, with k8s started.
 ...     return [c for c in containers if 'kube' not in c.name]
 
 >>> containers = not_kube(client.containers.list(all=True, filters={}))
 >>> [c.name for c in containers]
-[...'foobar']
+['foobar']
 >>> c = containers[0]
 
 >>> c.remove(force=True, v=True)
@@ -52,7 +52,7 @@ and in the latter it's Kubernetes pods.
 >>> assert c.id
 >>> assert c.image
 >>> c.labels
-{...'foo': ...'bar'}
+{'foo': 'bar'}
 >>> assert c.short_id
 >>> assert c.status
 
