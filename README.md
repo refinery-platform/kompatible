@@ -13,7 +13,7 @@ First, checkout this project, and install dependencies:
 `pip install -r requirements-dev.txt`.
 Then, make sure you have installed and started
 [Docker](https://docs.docker.com/docker-for-mac/install/)
-and/or [Minikube](https://kubernetes.io/docs/tutorials/hello-minikube/#create-a-minikube-cluster)
+and/or [Minikube](https://kubernetes.io/docs/tutorials/hello-minikube/#create-a-minikube-cluster).
 
 With those tools in place, either
 `import docker as sdk` or `import kompatible as sdk`
