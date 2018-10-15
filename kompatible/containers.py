@@ -49,7 +49,7 @@ class ContainersClient():
             client.Configuration.set_default(config)
         self.api = client.CoreV1Api()
 
-    def _ports_spec(self, ports):
+    def _get_ports_spec(self, ports):
         ports_spec = []
         for k, v in ports.items():
             if v is not None:
@@ -67,8 +67,8 @@ class ContainersClient():
             })
         return ports_spec
 
-    def _manifest(self, name=None, labels=None, image=None,
-                  ports_spec=None, environment=None):
+    def _get_pod_manifest(self, name=None, labels=None, image=None,
+                          ports_spec=None, environment=None):
         return {
             'apiVersion': 'v1',
             'kind': 'Pod',
@@ -95,22 +95,40 @@ class ContainersClient():
             }
         }
 
-    def run(self, image, command=None, name='anonymous',
-            labels={}, environment={}, ports={}, detach=False):
-        ports_spec = self._ports_spec(ports)
-        pod_manifest = self._manifest(
-            name=name, labels=labels, image=image,
-            ports_spec=ports_spec, environment=environment)
+    def _get_service_manifest(self):
+        return client.V1Service(
+            metadata=client.V1ObjectMeta(
+                generate_name='kompatible'
+            ),
+            spec=client.V1ServiceSpec(
+                ports=[client.V1ServicePort(
+                    port=80  # TODO
+                )]
+            )
+        )
 
-        pod = self.api.create_namespaced_pod(
-            body=pod_manifest, namespace=NAMESPACE)
-
+    def _wait(self, name):
         while True:
             resp = self.api.read_namespaced_pod(name=name, namespace=NAMESPACE)
             if resp.status.phase != 'Pending':
                 break
             time.sleep(1)
-        pass
+
+    def run(self, image, command=None, name='anonymous',
+            labels={}, environment={}, ports={}, detach=False):
+        pod_manifest = self._get_pod_manifest(
+            name=name, labels=labels, image=image,
+            ports_spec=self._get_ports_spec(ports),
+            environment=environment)
+
+        pod = self.api.create_namespaced_pod(
+            body=pod_manifest, namespace=NAMESPACE)
+
+        self._wait(name)
+
+        service_manifest = self._get_service_manifest()
+        self.api.create_namespaced_service(
+            namespace=NAMESPACE, body=service_manifest)
 
         if detach:
             if command is not None:
@@ -124,14 +142,14 @@ class ContainersClient():
         if command is not None:
             kwargs['command'] = ['/bin/sh', '-c', command]
         stream_response = stream(self.api.connect_get_namespaced_pod_exec,
-                                 name, 'default', **kwargs)
+                                 name, NAMESPACE, **kwargs)
         # Return bytes just to match behavior of Docker client.
         return stream_response.encode()
 
     def get(self, name):
         # TODO: Handle lookup by ID.
         return _ContainerWrapper(
-            self.api, self.api.read_namespaced_pod(name, 'default'))
+            self.api, self.api.read_namespaced_pod(name, NAMESPACE))
 
     def list(self, all=False, filters=None):
         all_pods = self.api.list_pod_for_all_namespaces(watch=False).items
