@@ -52,23 +52,23 @@ but differences between `docker` and `kompatible` are highlighted.)
 ## Container properties
 
 ```
->>> c.id
-docker-id  # docker
-...-...-...-...  # kompatible
+>>> 'ID: ' + c.id
+'ID: ...'  # docker
+'ID: ...-...-...-...'  # kompatible
 
 >>> c.image
-docker-image  # docker
+<Image: 'alpine:latest'>  # docker
 'alpine'  # kompatible
 
 >>> c.labels
 {'foo': 'bar'}
 
->>> c.short_id
-docker-id  # docker
-...-...  # kompatible
+>>> 'ID: ' + c.short_id
+'ID: ...'  # docker
+'ID: ...-...'  # kompatible
 
 >>> c.status
-docker-status  # docker
+'exited'  # docker
 {...}  # kompatible
 
 ```
@@ -83,14 +83,13 @@ docker-status  # docker
 ...     ports={'80/tcp': None},
 ...     detach=True
 ... )
-
 >>> container_from_run.attrs['NetworkSettings']['Ports']
 {}  # docker
 {'80/tcp': [{'HostIp': None, 'HostPort': None}]}  # kompatible
 
 >>> container_from_get = client.containers.get('nginx')
 >>> container_from_get.attrs['NetworkSettings']['Ports']['80/tcp']
-network-docker  # docker
+[{'HostIp': '0.0.0.0', 'HostPort': '...'}]  # docker
 [{'HostIp': None, 'HostPort': None}]  # kompatible
 
 >>> container_from_get.remove(force=True, v=True)
