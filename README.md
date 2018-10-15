@@ -21,6 +21,9 @@ and the following examples will work, although in the first case
 it's Docker containers starting up,
 and in the latter it's Kubernetes pods.
 
+(These examples ignore differences in string handling between Python 2 and 3,
+but differences between `docker` and `kompatible` are highlighted.)
+
 ## "Hello World!": Run, list, remove
 
 ```
@@ -49,12 +52,24 @@ and in the latter it's Kubernetes pods.
 ## Container properties
 
 ```
->>> assert c.id
->>> assert c.image
+>>> c.id
+docker-id  # docker
+...-...-...-...  # kompatible
+
+>>> c.image
+docker-image  # docker
+'alpine'  # kompatible
+
 >>> c.labels
 {'foo': 'bar'}
->>> assert c.short_id
->>> assert c.status
+
+>>> c.short_id
+docker-id  # docker
+...-...  # kompatible
+
+>>> c.status
+docker-status  # docker
+{...}  # kompatible
 
 ```
 
@@ -71,14 +86,12 @@ and in the latter it's Kubernetes pods.
 
 >>> container_from_run.attrs['NetworkSettings']['Ports']
 {}  # docker
-{something else}  # kompatible
+{'80/tcp': [{'HostIp': None, 'HostPort': None}]}  # kompatible
 
 >>> container_from_get = client.containers.get('nginx')
->>> port_info = container_from_get.attrs['NetworkSettings']['Ports']['80/tcp']
-
-# TODO: docker: random port; kompatible: None
->>> assert 'HostIp' in port_info[0]
->>> assert 'HostPort' in port_info[0]
+>>> container_from_get.attrs['NetworkSettings']['Ports']['80/tcp']
+network-docker  # docker
+[{'HostIp': None, 'HostPort': None}]  # kompatible
 
 >>> container_from_get.remove(force=True, v=True)
 

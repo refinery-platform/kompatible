@@ -8,16 +8,16 @@ IGNORE_KOMPATIBLE = doctest.register_optionflag('IGNORE_KOMPATIBLE')
 
 class UnfussyOutputChecker(doctest.OutputChecker):
     def check_output(self, want, got, optionflags):
-        # Account for differences in strings between 2 and 3:
+        # Ignore differences in strings between 2 and 3:
         got = sub(r"\bu'", "'", got)  # python 2
         got = sub(r"\bb'", "'", got)  # python 3
 
         # Allow different assertions for docker and kompatible:
-        if (optionflags & IGNORE_KOMPATIBLE and '# kompatible' in want) \
-                or (optionflags & IGNORE_DOCKER and '# docker' in want):
-            want = got  # ie, ignore this test
-        else:
-            want = sub(r'\s+#\s+docker|kompatible', '', want)
+        if optionflags & IGNORE_KOMPATIBLE:
+            want = sub(r'.+# kompatible\s+', '', want)
+        if optionflags & IGNORE_DOCKER:
+            want = sub(r'.+# docker\s+', '', want)
+        want = sub(r'\s+# (docker|kompatible)', '', want)
 
         # Handle any other optionflags
         return super().check_output(want, got, optionflags)
@@ -56,8 +56,9 @@ def main():
         string=readme, globs={'sdk': get_sdk(args)},
         name=filename, filename=None, lineno=0)
 
-    runner = doctest.DocTestRunner(checker=UnfussyOutputChecker(),
-                                   optionflags=get_options(args))
+    runner = doctest.DocTestRunner(
+        checker=UnfussyOutputChecker(),
+        optionflags=get_options(args) | doctest.ELLIPSIS)
     runner.run(examples)
     (failed, attempted) = runner.summarize()
     if failed > 0:
