@@ -69,8 +69,9 @@ and in the latter it's Kubernetes pods.
 ...     detach=True
 ... )
 
-#>>> container_from_run.attrs['NetworkSettings']['Ports']
-# not TODO?: docker: {}; kompatible: initialized
+>>> container_from_run.attrs['NetworkSettings']['Ports']
+{}  # docker
+{something else}  # kompatible
 
 >>> container_from_get = client.containers.get('nginx')
 >>> port_info = container_from_get.attrs['NetworkSettings']['Ports']['80/tcp']
