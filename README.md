@@ -9,19 +9,19 @@ with an interface which matches that of the
 
 ## Examples
 
-First, checkout this project, and install dependencies:
-`pip install -r requirements-dev.txt`.
-Then, make sure you have installed and started
-[Docker](https://docs.docker.com/docker-for-mac/install/)
-and/or [Minikube](https://kubernetes.io/docs/tutorials/hello-minikube/#create-a-minikube-cluster).
+First install this package from pypi: `pip install kompatible`.
+Then install the kubernetes client and/or the docker sdk from pypi,
+and correspondingly, either
+[Minikube](https://kubernetes.io/docs/tutorials/hello-minikube/#create-a-minikube-cluster).
+and/or [Docker](https://docs.docker.com/docker-for-mac/install/).
 
 With those tools in place, either
-`import docker as sdk` or `import kompatible as sdk`
+`import kompatible as sdk` or `import docker as sdk`
 and the following examples will work, although in the first case
-it's Docker containers starting up,
-and in the latter it's Kubernetes pods.
+it's Kubernetes pods starting up,
+and in the latter it's Docker containers.
 
-(These examples ignore differences in string handling between Python 2 and 3,
+(These examples ignore differences in string output between Python 2 and 3,
 but differences between `docker` and `kompatible` are highlighted.)
 
 ## "Hello World!": Run, list, remove
