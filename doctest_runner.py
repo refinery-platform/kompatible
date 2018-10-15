@@ -20,7 +20,7 @@ class UnfussyOutputChecker(doctest.OutputChecker):
         want = sub(r'\s+# (docker|kompatible)', '', want)
 
         # Handle any other optionflags
-        return super().check_output(want, got, optionflags)
+        return doctest.OutputChecker.check_output(self, want, got, optionflags)
 
 
 def get_args():

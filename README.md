@@ -57,7 +57,7 @@ but differences between `docker` and `kompatible` are highlighted.)
 'ID: ...-...-...-...'  # kompatible
 
 >>> c.image
-<Image: 'alpine:latest'>  # docker
+<Image: 'alpine:...'>  # docker
 'alpine'  # kompatible
 
 >>> c.labels
@@ -85,12 +85,18 @@ but differences between `docker` and `kompatible` are highlighted.)
 ... )
 >>> container_from_run.attrs['NetworkSettings']['Ports']
 {}  # docker
-{'80/tcp': [{'HostIp': None, 'HostPort': None}]}  # kompatible
+{'80/tcp': [{...}]}  # kompatible
 
 >>> container_from_get = client.containers.get('nginx')
->>> container_from_get.attrs['NetworkSettings']['Ports']['80/tcp']
-[{'HostIp': '0.0.0.0', 'HostPort': '...'}]  # docker
-[{'HostIp': None, 'HostPort': None}]  # kompatible
+>>> attrs = container_from_get.attrs['NetworkSettings']['Ports']['80/tcp']
+>>> attrs
+[{...}]
+>>> repr(attrs[0]['HostIp'])
+"'0.0.0.0'"  # docker
+'None'  # kompatible
+>>> repr(attrs[0]['HostPort'])
+"'...'" # docker
+'None'  # kompatible
 
 >>> container_from_get.remove(force=True, v=True)
 
