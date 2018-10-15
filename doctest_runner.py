@@ -5,11 +5,9 @@ from re import sub
 
 class UnfussyOutputChecker(doctest.OutputChecker):
     def check_output(self, want, got, optionflags):
-        if optionflags:
-            raise Exception('options are not supported')
         got = sub(r"\bu'", "'", got)  # python 2
         got = sub(r"\bb'", "'", got)  # python 3
-        return want == got
+        return super().check_output(want, got, optionflags)
 
 
 def get_sdk():
