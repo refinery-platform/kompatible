@@ -52,9 +52,12 @@ but differences between `docker` and `kompatible` are highlighted.)
 ## Container properties
 
 ```
->>> 'ID: ' + c.id
-'ID: ...'  # docker
-'ID: ...-...-...-...'  # kompatible
+>>> len(c.id)
+64  # docker
+36  # kompatible
+
+>>> len(c.short_id)
+10
 
 >>> c.image
 <Image: 'alpine:...'>  # docker
@@ -62,9 +65,6 @@ but differences between `docker` and `kompatible` are highlighted.)
 
 >>> c.labels
 {'foo': 'bar'}
-
->>> len(c.short_id)
-10
 
 >>> c.status
 'exited'  # docker
@@ -83,19 +83,18 @@ but differences between `docker` and `kompatible` are highlighted.)
 ...     detach=True
 ... )
 >>> container_from_run.attrs['NetworkSettings']['Ports']
-{}  # docker
-{'80/tcp': [{...}]}  # kompatible
+{}
 
 >>> container_from_get = client.containers.get('nginx')
 >>> attrs = container_from_get.attrs['NetworkSettings']['Ports']['80/tcp']
->>> attrs
-[{...}]
->>> repr(attrs[0]['HostIp'])
-"'0.0.0.0'"  # docker
-'None'  # kompatible
->>> repr(attrs[0]['HostPort'])
-"'...'" # docker
-'None'  # kompatible
+>>> len(attrs)
+1
+>>> attrs[0]['HostIp']
+'0.0.0.0'  # docker
+'10...'  # kompatible
+>>> attrs[0]['HostPort']
+'...' # docker
+80  # kompatible
 
 >>> container_from_get.remove(force=True, v=True)
 

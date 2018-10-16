@@ -156,7 +156,7 @@ class ContainersClient():
         service = self.api.read_namespaced_service(name, NAMESPACE)
         pod = self.api.read_namespaced_pod(name, NAMESPACE)
 
-        return _ContainerWrapper(self.api, pod)
+        return _ContainerWrapper(self.api, pod, service)
 
     def list(self, all=False, filters=None):
         all_pods = self.api.list_pod_for_all_namespaces(watch=False).items
@@ -166,7 +166,7 @@ class ContainersClient():
 
 
 class _ContainerWrapper():
-    def __init__(self, api, pod):
+    def __init__(self, api, pod, service=None):
         self._api = api
 
         meta = pod.metadata
@@ -176,18 +176,19 @@ class _ContainerWrapper():
                 'Expected single container; not {}'.format(containers))
         container = containers[0]
 
-        if container.ports is None:
+        if service is None or service.spec.ports is None:
             ports = {}
         else:
             ports = {
                 '{}/{}'.format(
-                    p.container_port,
+                    p.port,  # or `target_port`?
+                    # or `node_port`? but that is None.
                     p.protocol.lower()
                 ): [{
-                    'HostIp': p.host_ip,
-                    'HostPort': p.host_port
+                    'HostIp': service.spec.cluster_ip,  # or `external_i_ps`?
+                    'HostPort': p.target_port  # ???
                 }]
-                for p in container.ports
+                for p in service.spec.ports
             }
 
         self.id = meta.uid
