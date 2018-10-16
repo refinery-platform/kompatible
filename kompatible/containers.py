@@ -204,6 +204,13 @@ class _ContainerWrapper():
         if not force or not v:
             raise ContainersException(
                 'Unsupported: "force" and "v" must both be True')
+        try:
+            self._api.delete_namespaced_service(
+                self.name, NAMESPACE,
+                client.V1DeleteOptions(grace_period_seconds=0))
+        except client.rest.ApiException:
+            # Service may not exist. TODO: Better to query first.
+            pass
         self._api.delete_namespaced_pod(
             self.name, NAMESPACE,
             client.V1DeleteOptions(grace_period_seconds=0))

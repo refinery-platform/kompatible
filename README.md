@@ -63,9 +63,8 @@ but differences between `docker` and `kompatible` are highlighted.)
 >>> c.labels
 {'foo': 'bar'}
 
->>> 'ID: ' + c.short_id
-'ID: ...'  # docker
-'ID: ...-...'  # kompatible
+>>> len(c.short_id)
+10
 
 >>> c.status
 'exited'  # docker
