@@ -43,6 +43,10 @@ but differences between `docker` and `kompatible` are highlighted.)
 ['foobar']
 >>> c = containers[0]
 
+>>> c.logs()
+'hello world\n'  # docker
+''  # kompatible
+
 >>> c.remove(force=True, v=True)
 >>> containers = not_kube(client.containers.list(all=True, filters={}))
 >>> assert len(containers) == 0
@@ -95,6 +99,16 @@ but differences between `docker` and `kompatible` are highlighted.)
 >>> attrs[0]['HostPort']
 '...' # docker
 80  # kompatible
+
+>>> container_from_get.logs(timestamps=True)
+''
+
+```
+And connect to that container via HTTP:
+```
+>>> import requests
+
+# TODO
 
 >>> container_from_get.remove(force=True, v=True)
 

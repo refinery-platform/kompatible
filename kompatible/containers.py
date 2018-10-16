@@ -201,6 +201,10 @@ class _ContainerWrapper():
         self.short_id = self.id[:10]
         self.status = pod.status
 
+    def logs(self, timestamps=True):
+        return self._api.read_namespaced_pod_log(
+            name=self.name, namespace=NAMESPACE, timestamps=timestamps)
+
     def remove(self, force=None, v=None):
         if not force or not v:
             raise ContainersException(
