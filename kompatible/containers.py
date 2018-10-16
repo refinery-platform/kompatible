@@ -98,10 +98,10 @@ class ContainersClient():
     def _get_port_numbers(self, ports):
         return [spec['containerPort'] for spec in self._get_ports_spec(ports)]
 
-    def _get_service_manifest(self, labels={}, ports={}):
+    def _get_service_manifest(self, labels={}, ports={}, name='anonymous'):
         return client.V1Service(
             metadata=client.V1ObjectMeta(
-                generate_name='kompatible'
+                name=name
             ),
             spec=client.V1ServiceSpec(
                 ports=[client.V1ServicePort(port=port)
@@ -131,7 +131,7 @@ class ContainersClient():
 
         if ports:
             service_manifest = self._get_service_manifest(
-                labels=labels, ports=ports)
+                labels=labels, ports=ports, name=name)
             self.api.create_namespaced_service(
                 namespace=NAMESPACE, body=service_manifest)
 
@@ -153,8 +153,10 @@ class ContainersClient():
 
     def get(self, name):
         # TODO: Handle lookup by ID.
-        return _ContainerWrapper(
-            self.api, self.api.read_namespaced_pod(name, NAMESPACE))
+        service = self.api.read_namespaced_service(name, NAMESPACE)
+        pod = self.api.read_namespaced_pod(name, NAMESPACE)
+
+        return _ContainerWrapper(self.api, pod)
 
     def list(self, all=False, filters=None):
         all_pods = self.api.list_pod_for_all_namespaces(watch=False).items
