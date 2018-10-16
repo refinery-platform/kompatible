@@ -95,15 +95,18 @@ class ContainersClient():
             }
         }
 
-    def _get_service_manifest(self):
+    def _get_port_numbers(self, ports):
+        return [spec['containerPort'] for spec in self._get_ports_spec(ports)]
+
+    def _get_service_manifest(self, labels={}, ports={}):
         return client.V1Service(
             metadata=client.V1ObjectMeta(
                 generate_name='kompatible'
             ),
             spec=client.V1ServiceSpec(
-                ports=[client.V1ServicePort(
-                    port=80  # TODO
-                )]
+                ports=[client.V1ServicePort(port=port)
+                       for port in self._get_port_numbers(ports)],
+                selector=labels
             )
         )
 
@@ -116,19 +119,21 @@ class ContainersClient():
 
     def run(self, image, command=None, name='anonymous',
             labels={}, environment={}, ports={}, detach=False):
+
         pod_manifest = self._get_pod_manifest(
             name=name, labels=labels, image=image,
             ports_spec=self._get_ports_spec(ports),
             environment=environment)
-
         pod = self.api.create_namespaced_pod(
             body=pod_manifest, namespace=NAMESPACE)
 
         self._wait(name)
 
-        service_manifest = self._get_service_manifest()
-        self.api.create_namespaced_service(
-            namespace=NAMESPACE, body=service_manifest)
+        if ports:
+            service_manifest = self._get_service_manifest(
+                labels=labels, ports=ports)
+            self.api.create_namespaced_service(
+                namespace=NAMESPACE, body=service_manifest)
 
         if detach:
             if command is not None:
