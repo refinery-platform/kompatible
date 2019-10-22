@@ -7,4 +7,4 @@ autopep8==1.4
 isort==4.3.4
 
 # Read .travis.yml so that our pypi version metadata matches our tests
-PyYAML==3.13
+PyYAML==5.1
